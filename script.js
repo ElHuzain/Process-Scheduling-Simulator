@@ -64,7 +64,6 @@ function init(){
         init();
     }, 50);
 }
-init();
 
 
 function handleProcesses(){
