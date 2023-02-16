@@ -1,5 +1,7 @@
 let question = document.getElementById('title');
 let textBox = document.getElementById('processAmount');
+let log = document.getElementById('log');
+let processdata = document.getElementById('processdata');
 let stage = 0;
 let done = 0;
 let type = 'SJF';
@@ -50,15 +52,15 @@ function init(){
         })
         
         if(isDone() == true){
-            console.log("DONE!");
+            updatelog('DONE!');
             let avgWaiting = 0;
             pArr.forEach(process => {
                 process.turnAroundTime = process.endTime - process.arrivalTime;
                 process.waitingTime = process.turnAroundTime - process.brustTime;
                 avgWaiting+=process.waitingTime;
-                console.log(`P${process.number}\nEnd time: ${process.endTime}\nTurn around time: ${process.turnAroundTime}\nWaiting time: ${process.waitingTime}`)
+                updatetable(`${process.number}`, `${process.endTime}`, `${process.turnAroundTime}`, `${process.waitingTime}`);
             })
-            console.log(`Average waiting time = ${avgWaiting}/${pArr.length} = ${avgWaiting/pArr.length}`)
+            updatelog(`Average waiting time = ${avgWaiting}/${pArr.length} = ${avgWaiting/pArr.length}`);
             return;
         }
         init();
@@ -68,7 +70,7 @@ function init(){
 
 function handleProcesses(){
     if(runningProcess != undefined && runningProcess.brust == 0) {
-        console.log(`P${runningProcess.number} has been completed at ${time}.`)
+        updatelog(`P${runningProcess.number} has been completed at ${time}.`);
         runningProcess.completed = true;
         activeProcesses.splice(activeProcesses.indexOf(runningProcess), 1);
         completed++;
@@ -77,14 +79,14 @@ function handleProcesses(){
     }
     if(runningProcess == undefined){
         chooseProcess();
-        if(runningProcess != undefined) console.log(`P${runningProcess.number} is now operating at ${time}`)
+        if(runningProcess != undefined) updatelog(`P${runningProcess.number} is now operating at ${time}`)
     }
     if(runningProcess != undefined && runningProcess.completed == false && runningProcess.brust > 0) {
         if(type == 'RR'){ 
             quantumCounter--;
             runningProcess.brust--;
             if(runningProcess.brust == 0){
-                console.log(`P${runningProcess.number} has been COMPLETED at ${time}`)
+                updatelog(`P${runningProcess.number} has been COMPLETED at ${time}`);
                 runningProcess.completed = true;
                 runningProcess.endTime = time;
                 activeProcesses.splice(activeProcesses.indexOf(runningProcess), 1);
@@ -92,7 +94,7 @@ function handleProcesses(){
                 chooseProcess();
             }
             else if(time % 5 == 0){
-                console.log(`P${runningProcess.number} has finished a run at ${time} (${runningProcess.brust} remaining)`)
+                updatelog(`P${runningProcess.number} has finished a run at ${time} (${runningProcess.brust} remaining)`)
                 quantumCounter = quantum;
                 chooseProcess();
             }
@@ -112,15 +114,17 @@ function activeProcess(){
                         chooseProcess();
                         if(oldProcess != runningProcess && runningProcess == pArr[i]) {
                             if(oldProcess.brustTime == time){
-                                console.log(`P${oldProcess.number} has been completed at ${time}.`)
+                                updatelog(`P${oldProcess.number} has been completed at ${time}.`)
                                 oldProcess.completed = true;
                                 activeProcesses.splice(activeProcesses.indexOf(oldProcess), 1);
                                 completed++;
                                 oldProcess.endTime = time;
                             } else if(oldProcess.brustTime == oldProcess.time){
-                                console.log(`P${runningProcess.number} is now operating at ${time}`)
+                                updatelog(`P${runningProcess.number} is now operating at ${time}`);
                             }
-                            else console.log(`P${oldProcess.number} has been interrupted by P${runningProcess.number} at ${time}`)
+                            else {
+                            updatelog(`P${oldProcess.number} has been interrupted by P${runningProcess.number} at ${time}`);
+                            }
                         }
                     }
                 }
@@ -220,3 +224,20 @@ function getShortest(){
     return shortest;
 }
 
+function updatelog(message) {
+    var newlogmessage = document.createElement('li');
+                                newlogmessage.innerHTML = message;
+                                log.appendChild(newlogmessage);
+}
+
+function updatetable(column1, column2, column3, column4) {
+    var row = processdata.insertRow(-1);
+    var cell1 = row.insertCell(0);
+    var cell2 = row.insertCell(1);
+    var cell3 = row.insertCell(2);
+    var cell4 = row.insertCell(3);
+    cell1.innerHTML = column1;
+    cell2.innerHTML = column2;
+    cell3.innerHTML = column3;
+    cell4.innerHTML = column4;
+}
